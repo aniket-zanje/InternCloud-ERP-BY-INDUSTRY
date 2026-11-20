@@ -37,6 +37,12 @@ const userSchema = new mongoose.Schema({
     type: String,
     trim: true
   },
+  // Shown on the intern's Virtual ID card
+  bloodGroup: {
+    type: String,
+    enum: ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'],
+    default: undefined
+  },
   role: {
     type: String,
     enum: ['SUPER_ADMIN', 'ORG_ADMIN', 'MENTOR', 'CANDIDATE'],
