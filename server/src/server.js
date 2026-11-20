@@ -34,6 +34,15 @@ require('./models/AuditLog');
 const app = express();
 app.use(express.json());
 
+const taskRoutes = require("./routes/taskRoutes");
+app.use("/api/tasks", taskRoutes);
+
+const submissionRoutes = require("./routes/submissionRoutes");
+app.use("/api/submissions", submissionRoutes);
+
+const attendanceRoutes = require("./routes/attendanceRoutes");
+app.use("/api/attendance", attendanceRoutes);
+
 // 5. Test Route
 app.get('/', (req, res) => {
   res.send('InternCloud API is running...');
