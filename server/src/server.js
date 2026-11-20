@@ -1,15 +1,13 @@
+
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const connectDB = require('./config/db');
 
-// 1. Load environment variables (must run before anything reads process.env)
+// 1. Load environment variables
 dotenv.config();
 
-// 2. Connect to Database
-connectDB();
-
-// 3. Import all 20 Models (forces Mongoose to register them)
+// 2. Import all 20 Mongoose models
 require('./models/Organization');
 require('./models/User');
 require('./models/InternshipOpening');
@@ -32,34 +30,57 @@ require('./models/Notification');
 require('./models/AuditLog');
 
 const { UPLOAD_ROOT } = require('./middleware/upload');
-const { notFound, errorHandler } = require('./middleware/errorHandler');
+const {
+  notFound,
+  errorHandler
+} = require('./middleware/errorHandler');
 
-// 4. Initialize Express App
+// 3. Initialize Express application
 const app = express();
 
-const allowedOrigins = (process.env.CLIENT_URL || 'http://localhost:5173')
+// 4. Configure CORS
+const allowedOrigins = (
+  process.env.CLIENT_URL || 'http://localhost:5173'
+)
   .split(',')
-  .map((s) => s.trim());
+  .map((origin) => origin.trim());
+
 app.use(cors({ origin: allowedOrigins }));
+
+// 5. Configure body parsing
 app.use(express.json());
 
-// Uploaded profile photos + task submissions
+// 6. Serve uploaded files
 app.use('/uploads', express.static(UPLOAD_ROOT));
 
-// 5. Routes
+// 7. Default route
 app.get('/', (req, res) => {
   res.send('InternCloud API is running...');
 });
+
+// 8. Register API routes
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/intern', require('./routes/internRoutes'));
 app.use('/api/public', require('./routes/publicRoutes'));
 
-// 6. Errors (must be last)
+// 9. Error handling (must be last)
 app.use(notFound);
 app.use(errorHandler);
 
-// 7. Start Server
+// 10. Start server after successful MongoDB connection
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-});
+
+const startServer = async () => {
+  try {
+    await connectDB();
+
+    app.listen(PORT, () => {
+      console.log(`🚀 Server running on port ${PORT}`);
+    });
+  } catch (error) {
+    console.error('❌ Server startup failed:', error.message);
+    process.exit(1);
+  }
+};
+
+startServer();
